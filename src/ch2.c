@@ -3,13 +3,7 @@
 #   Sean Wu
 ################################################## */
 
-/* C headers */
-#include <stdio.h>
-#include <math.h>
-
-/* R's C API */
-#include <R.h>
-#include <Rinternals.h>
+#include "ch2.h"
 
 /* the birthday problem */
 SEXP C_birthday(SEXP maxR){
