@@ -25,3 +25,26 @@ SEXP C_birthday(SEXP maxR){
   }
   return R_NilValue;
 }
+
+/* Fibonacci */
+int fibonacci(int i){
+  int ans;
+  if(i == 0 || i == 1){
+    ans = i;
+  } else {
+    ans = (fibonacci(i-1) + fibonacci(i-2));
+  }
+  return ans;
+}
+
+SEXP C_fibonacci(SEXP maxR){
+  int max = asReal(maxR);
+  SEXP out = PROTECT(allocVector(REALSXP,max));
+  double* pout = REAL(out);
+  for(int i=0; i<max; i++){
+    pout[i] = fibonacci(i);
+  }
+
+  UNPROTECT(1);
+  return out;
+}

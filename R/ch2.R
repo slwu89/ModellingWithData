@@ -8,3 +8,9 @@
 birthday <- function(max){
   .Call(C_birthday,max)
 }
+
+#' @useDynLib ModellingWithData C_fibonacci
+#' @export
+fibonacci <- function(max){
+  .Call(C_fibonacci,max)
+}
