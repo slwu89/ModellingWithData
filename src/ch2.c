@@ -32,13 +32,42 @@ int fibonacci(int i){
 }
 
 SEXP C_fibonacci(SEXP maxR){
+
   int max = asReal(maxR);
-  SEXP out = PROTECT(allocVector(REALSXP,max));
-  double* pout = REAL(out);
+
+  /* names of output */
+  SEXP names = PROTECT(allocVector(STRSXP,2));
+  SET_STRING_ELT(names,0,mkChar("fibonacci sequence"));
+  SET_STRING_ELT(names,1,mkChar("ratio of [n]/[n-1]"));
+
+  /* return us a list */
+  SEXP out = PROTECT(allocVector(VECSXP, 2));
+  namesgets(out,names);
+
+  /* elements of list */
+  SEXP seq = PROTECT(allocVector(REALSXP,max));
+  SEXP ratio = PROTECT(allocVector(REALSXP,max));
+
+  /* pointers to the elements */
+  double* pseq = REAL(seq);
+  double* pratio = REAL(ratio);
+
+  /* avoid division by 0 */
+  pratio[0] = 0.;
+  pratio[1] = 1.;
+
+  /* actual calculation */
   for(int i=0; i<max; i++){
-    pout[i] = fibonacci(i);
+    pseq[i] = fibonacci(i);
+    if(i>1){
+      pratio[i] = pseq[i]/pseq[i-1];
+    }
   }
 
-  UNPROTECT(1);
+  /* set return list and return */
+  SET_VECTOR_ELT(out,0,seq);
+  SET_VECTOR_ELT(out,1,ratio);
+
+  UNPROTECT(4);
   return out;
 }
