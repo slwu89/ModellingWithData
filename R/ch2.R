@@ -14,3 +14,33 @@ birthday <- function(max){
 fibonacci <- function(max){
   .Call(C_fibonacci,max)
 }
+
+#' @useDynLib ModellingWithData C_birthday_struct
+#' @export
+birthday_struct <- function(upto){
+  .Call(C_birthday_struct,upto)
+}
+
+#' @useDynLib ModellingWithData C_triangular
+#' @export
+triangular <- function(inR){
+  .Call(C_triangular,inR)
+}
+
+#' @useDynLib ModellingWithData C_find_next_triangular
+#' @export
+find_next_triangular <- function(iR){
+  .Call(C_find_next_triangular,iR)
+}
+
+#' @useDynLib ModellingWithData C_find_prev_triangular
+#' @export
+find_prev_triangular <- function(iR){
+  .Call(C_find_prev_triangular,iR)
+}
+
+#' @useDynLib ModellingWithData C_find_triplet
+#' @export
+find_triplet <- function(iR){
+  .Call(C_find_triplet,iR)
+}
