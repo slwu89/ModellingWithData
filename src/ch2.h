@@ -18,3 +18,5 @@ SEXP C_birthday(SEXP maxR);
 int fibonacci(int i);
 
 SEXP C_fibonacci(SEXP maxR);
+
+/* the birthday problem with stucts and functions (pg.35) */
