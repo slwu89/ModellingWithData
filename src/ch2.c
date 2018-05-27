@@ -221,8 +221,10 @@ SEXP C_swap(SEXP aR, SEXP bR){
   int* b = malloc(sizeof(int));
   *a = asInteger(aR);
   *b = asInteger(bR);
-  printf("before swap ... a: %i, b: %i\n",*a,*b);
+  printf("before swap, a: %i (address: %p), b: %i (address: %p)\n",*a,a,*b,b);
   swap(a,b);
-  printf("before swap ... a: %i, b: %i\n",*a,*b);
+  printf("after swap, a: %i (address: %p), b: %i (address: %p)\n",*a,a,*b,b);
+  free(a);
+  free(b);
   return R_NilValue;
 }
