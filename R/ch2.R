@@ -44,3 +44,9 @@ find_prev_triangular <- function(iR){
 find_triplet <- function(iR){
   .Call(C_find_triplet,iR)
 }
+
+#' @useDynLib ModellingWithData C_swap
+#' @export
+swap <- function(aR,bR){
+  .Call(C_swap,aR,bR)
+}

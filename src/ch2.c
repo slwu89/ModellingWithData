@@ -204,3 +204,25 @@ SEXP C_find_triplet(SEXP inR){
   UNPROTECT(1);
   return outR;
 };
+
+
+/* ##################################################
+# swap ints
+################################################## */
+
+void swap(int* a, int* b){
+  int c = *a;
+  *a = *b;
+  *b = c;
+};
+
+SEXP C_swap(SEXP aR, SEXP bR){
+  int* a = malloc(sizeof(int));
+  int* b = malloc(sizeof(int));
+  *a = asInteger(aR);
+  *b = asInteger(bR);
+  printf("before swap ... a: %i, b: %i\n",*a,*b);
+  swap(a,b);
+  printf("before swap ... a: %i, b: %i\n",*a,*b);
+  return R_NilValue;
+}

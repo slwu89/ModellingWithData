@@ -57,3 +57,11 @@ SEXP C_find_prev_triangular(SEXP iR);
 void find_triplet(int in, int out[]);
 
 SEXP C_find_triplet(SEXP inR);
+
+/* ##################################################
+# swap ints
+################################################## */
+
+void swap(int* a, int* b);
+
+SEXP C_swap(SEXP aR, SEXP bR);
