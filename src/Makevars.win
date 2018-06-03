@@ -1,2 +1,2 @@
 PKG_CFLAGS += -std=c11 -g
-PKG_LIBS += -L/usr/lib -lgsl
+PKG_LIBS += -L/usr/lib -L/usr/local/lib -L/usr/local/Cellar/glib/2.56.1/include/glib-2.0 -lapophenia -lgsl -lglib-2.0
