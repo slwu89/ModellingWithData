@@ -17,7 +17,7 @@ static int hawks, doves;
 static gint compare_keys(const void *L, const void *R){
   const int *Lb  = L;
   const int *Rb  = R;
-    return *Lb - *Rb;
+  return *Lb - *Rb;
 }
 
 static gboolean tree_bird_plays(void *key, void *in, void *v){
