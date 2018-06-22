@@ -61,6 +61,7 @@ SEXP C_rfmc(SEXP n, SEXP P, SEXP pi0, SEXP seed){
   /* sample initial state of DTMC */
   pv[0] = gsl_ran_discrete(rng,lookups[0]);
 
+  /* sample trajectory of DTMC */
   for(int i=1; i<asInteger(n); i++){
     pv[i] = gsl_ran_discrete(rng,lookups[pv[i-1]+1]);
   }
