@@ -19,12 +19,6 @@ rfmc <- function(n, P, pi0) {
 #' @useDynLib ModellingWithData C_rfmc
 #' @export
 rfmc_C <- function(n,P,pi0,seed){
-  if(!is.integer(n)){
-    stop("n must be an integer")
-  }
-  if(!is.integer(seed)){
-    stop("seed must be an integer")
-  }
   if(!is.matrix(P)){
     stop("P must be a numeric matrix")
   }
@@ -37,5 +31,5 @@ rfmc_C <- function(n,P,pi0,seed){
   if(nrow(P)!=ncol(P)){
     stop("P must be a square matrix")
   }
-  ts(.Call(C_rfmc,n,P,pi0,seed))
+  ts(.Call(C_rfmc,as.integer(n),P,pi0,as.integer(seed)))
 }

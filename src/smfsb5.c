@@ -62,7 +62,7 @@ SEXP C_rfmc(SEXP n, SEXP P, SEXP pi0, SEXP seed){
   pv[0] = gsl_ran_discrete(rng,lookups[0]);
 
   for(int i=1; i<asInteger(n); i++){
-    pv[i] = gsl_ran_discrete(rng,lookups[pv[i-1]]);
+    pv[i] = gsl_ran_discrete(rng,lookups[pv[i-1]+1]);
   }
 
   /* free memory */
