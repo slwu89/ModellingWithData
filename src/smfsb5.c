@@ -5,7 +5,10 @@
 
 #include "smfsb5.h"
 
-/* get GSL matrix from SEXP (borrowed from RcppGSL) */
+
+/* ##################################################
+#   get GSL matrix from SEXP (borrowed from RcppGSL)
+################################################## */
 gsl_matrix* SEXP_2_GSL_matrix(SEXP matR){
 
   /* extract the "dim" attribute */
@@ -28,7 +31,10 @@ gsl_matrix* SEXP_2_GSL_matrix(SEXP matR){
   return m;
 };
 
-/* Simulate DTMC */
+
+/* ##################################################
+#   Simulate DTMC
+################################################## */
 SEXP C_rfmc(SEXP n, SEXP P, SEXP pi0, SEXP seed){
 
   /* output object and a pointer to it */
@@ -76,3 +82,98 @@ SEXP C_rfmc(SEXP n, SEXP P, SEXP pi0, SEXP seed){
   UNPROTECT(1);
   return v;
 };
+
+
+/* ##################################################
+#   Simulate AR(1)
+################################################## */
+SEXP C_ar1(SEXP n, SEXP alpha, SEXP sigma, SEXP seed){
+
+  /* output object and a pointer to it */
+  SEXP v = PROTECT(allocVector(REALSXP,asInteger(n)));
+  double* pv = REAL(v);
+
+  /* alloc rng */
+  gsl_rng * rng = gsl_rng_alloc(gsl_rng_mt19937);
+  gsl_rng_set(rng,asInteger(seed));
+
+  /* simulate trajectory */
+  pv[0] = 0.;
+  for(int i=1; i<asInteger(n); i++){
+    pv[i] = asReal(alpha)*pv[i-1] + gsl_ran_gaussian(rng,asReal(sigma));
+  }
+
+  /* free memory */
+  gsl_rng_free(rng);
+
+  /* unprotect SEXPs and return to R */
+  UNPROTECT(1);
+  return v;
+};
+
+
+
+/* ##################################################
+#   Simulate CTMC
+################################################## */
+ SEXP C_ctmc(SEXP n, SEXP Q, SEXP pi0, SEXP seed){
+
+  /* output objects and pointers to them */
+  SEXP xvec = PROTECT(allocVector(INTSXP,asInteger(n)));
+  int* xvec_p = INTEGER(xvec);
+
+  SEXP tvec = PROTECT(allocVector(REALSXP,asInteger(n)));
+  double* tvec_p = REAL(tvec);
+
+  /* alloc rng */
+  gsl_rng * rng = gsl_rng_alloc(gsl_rng_mt19937);
+  gsl_rng_set(rng,asInteger(seed));
+
+  /* set lookups */
+  int nStates = length(pi0);
+  gsl_ran_discrete_t* lookups[nStates];
+  double* q = REAL(Q);
+  for(int i=0; i<nStates; i++){
+    double rowi[nStates];
+    for(int j=0; j<nStates; j++){
+      rowi[j] = q[i+nStates*j];
+    }
+    rowi[i] = 0.;
+    lookups[i] = gsl_ran_discrete_preproc(nStates,rowi);
+  }
+
+  /* sample initial state of CTMC */
+  gsl_ran_discrete_t* pi0_l;
+  pi0_l = gsl_ran_discrete_preproc(nStates,REAL(pi0));
+  xvec_p[0] = gsl_ran_discrete(rng,pi0_l);
+  double t = 0.;
+  tvec_p[0] = t;
+
+  /* sample trajectory of CTMC */
+  for(int i=1; i<asInteger(n); i++){
+    t += gsl_ran_exponential(rng,-q[xvec_p[i-1]+nStates*xvec_p[i-1]]);
+    xvec_p[i] = gsl_ran_discrete(rng,lookups[xvec_p[i-1]]);
+    tvec_p[i] = t;
+  }
+
+  /* free memory */
+  gsl_rng_free(rng);
+  gsl_ran_discrete_free(pi0_l);
+  for(int i=0; i<nStates; i++){
+    gsl_ran_discrete_free(lookups[i]);
+  }
+
+  /* return output */
+  SEXP names = PROTECT(Rf_allocVector(STRSXP,2));
+  SET_STRING_ELT(names,0,Rf_mkChar("states"));
+  SET_STRING_ELT(names,1,Rf_mkChar("times"));
+
+  SEXP out = PROTECT(allocVector(VECSXP, 2));
+  Rf_namesgets(out,names);
+
+  SET_VECTOR_ELT(out,0,xvec);
+  SET_VECTOR_ELT(out,1,tvec);
+
+  UNPROTECT(4);
+  return out;
+ };

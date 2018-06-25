@@ -21,3 +21,9 @@ gsl_matrix* SEXP_2_GSL_matrix(SEXP matR);
 
 /* Simulate DTMC */
 SEXP C_rfmc(SEXP n, SEXP P, SEXP pi0, SEXP seed);
+
+/* Simulate AR(1) */
+SEXP C_ar1(SEXP n, SEXP alpha, SEXP sigma, SEXP seed);
+
+/* Simulate CTMC */
+SEXP C_ctmc(SEXP n, SEXP Q, SEXP pi0, SEXP seed);
