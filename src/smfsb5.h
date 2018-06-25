@@ -27,3 +27,6 @@ SEXP C_ar1(SEXP n, SEXP alpha, SEXP sigma, SEXP seed);
 
 /* Simulate CTMC */
 SEXP C_ctmc(SEXP n, SEXP Q, SEXP pi0, SEXP seed);
+
+/* Simulate Diffusion Process via Euler-Maruyama Approximation */
+// SEXP C_rdiff()
