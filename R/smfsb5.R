@@ -67,7 +67,7 @@ rcfmc <- function(n,Q,pi0) {
     xvec[i+1] = x
     tvec[i] = t
   }
-  stepfun(tvec,xvec)
+  return(list("times"=tvec,"states"=xvec))
 }
 
 #' Simulate CTMC (in C)
@@ -86,6 +86,6 @@ rcfmc_C <- function(n,Q,pi0,seed){
   if(nrow(Q)!=ncol(Q)){
     stop("Q must be a square matrix")
   }
-  out <- .Call(C_ctmc,as.integer(n),Q,pi0,as.integer(seed))
-  return(stepfun(out$times[-1],out$states))
+  .Call(C_ctmc,as.integer(n),Q,pi0,as.integer(seed))
+  # return(stepfun(out$times[-1],out$states))
 }
