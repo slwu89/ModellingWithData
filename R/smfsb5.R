@@ -122,8 +122,7 @@ rdiff <- function(afun, bfun, x0 = 0, t = 50, dt = 0.01, ...){
 #' bfun <- function(x,lambda,mu) {
 #'  sqrt(lambda+mu*x)
 #'  }
-#'  out <- rdiff_C(afun,bfun,seed = 42,lambda=1,mu=0.1)
-#'  plot(ts(out,0.01))
+#'  plot(rdiff_C(afun,bfun,seed = 42,lambda=1,mu=0.1))
 #' @useDynLib ModellingWithData C_rdiff
 #' @export
 rdiff_C <- function(afun,bfun,x0=0,t=50,dt=0.01,seed,...){

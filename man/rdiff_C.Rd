@@ -16,6 +16,5 @@ afun <- function(x,lambda,mu) {
 bfun <- function(x,lambda,mu) {
  sqrt(lambda+mu*x)
  }
- out <- rdiff_C(afun,bfun,seed = 42,lambda=1,mu=0.1)
- plot(ts(out,0.01))
+ plot(rdiff_C(afun,bfun,seed = 42,lambda=1,mu=0.1))
 }
