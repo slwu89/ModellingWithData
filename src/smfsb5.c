@@ -89,13 +89,13 @@ SEXP C_rfmc(SEXP n, SEXP P, SEXP pi0, SEXP seed){
 ################################################## */
 SEXP C_ar1(SEXP n, SEXP alpha, SEXP sigma, SEXP seed){
 
-  /* output object and a pointer to it */
-  SEXP v = PROTECT(allocVector(REALSXP,asInteger(n)));
-  double* pv = REAL(v);
-
   /* alloc rng */
   gsl_rng * rng = gsl_rng_alloc(gsl_rng_mt19937);
   gsl_rng_set(rng,asInteger(seed));
+
+  /* output object and a pointer to it */
+  SEXP v = PROTECT(allocVector(REALSXP,asInteger(n)));
+  double* pv = REAL(v);
 
   /* simulate trajectory */
   pv[0] = 0.;
@@ -177,3 +177,56 @@ SEXP C_ar1(SEXP n, SEXP alpha, SEXP sigma, SEXP seed){
   UNPROTECT(4);
   return out;
  };
+
+
+ SEXP C_rdiff(SEXP call, SEXP x0, SEXP t, SEXP dtR, SEXP seed, SEXP rho){
+
+   /* alloc rng */
+   gsl_rng * rng = gsl_rng_alloc(gsl_rng_mt19937);
+   gsl_rng_set(rng,asInteger(seed));
+
+   double dt = asReal(dtR); /* size of grid */
+   int n = (int)(asReal(t)/dt); /* total number of steps */
+   SEXP xvec = PROTECT(allocVector(REALSXP,n)); /* output vector */
+   double* xvec_p = REAL(xvec); /* pointer to output */
+   double x = asReal(x0);/* current value of process */
+   xvec_p[0] = x;
+   double sdt = sqrt(dt); /* standard deviation of gaussian white noise (derivative of Brownian motion) */
+
+   /* allows access to ... */
+   SEXP args = CDR(call);
+
+   /* get the symbol-value association between the 'afun' and 'bfun' symbols */
+   SEXP afun = install("afun");
+   args = CDR(args);
+
+   SEXP bfun = install("bfun");
+   args = CDR(args);
+
+   /* grab the 'x' argument for the afun and bfun we want to call */
+   SEXP a1 = PROTECT(allocVector(REALSXP,1));
+   SEXP b1 = PROTECT(allocVector(REALSXP,1));
+   REAL(a1)[0] = x;
+   REAL(b1)[0] = x;
+
+   /* make the call  */
+   SEXP a1call = PROTECT(LCONS(afun, LCONS(a1, LCONS(R_DotsSymbol, R_NilValue))));
+   SEXP b1call = PROTECT(LCONS(bfun, LCONS(b1, LCONS(R_DotsSymbol, R_NilValue))));
+
+   double tt;
+   for(int i=1;i<=n;i++){
+     tt = i*dt; /* time on the grid of points */
+     REAL(a1)[0] = x;
+     REAL(b1)[0] = x;
+     SEXP aRes = R_forceAndCall(a1call, 1, rho);
+     SEXP bRes = R_forceAndCall(b1call, 1, rho);
+     x += asReal(aRes)*dt + asReal(bRes)*gsl_ran_gaussian(rng,sdt);
+     xvec_p[i] = x;
+   }
+
+   gsl_rng_free(rng);
+
+   UNPROTECT(5);
+
+   return xvec;
+ }

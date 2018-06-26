@@ -112,3 +112,21 @@ rdiff <- function(afun, bfun, x0 = 0, t = 50, dt = 0.01, ...){
   }
   ts(xvec, deltat = dt)
 }
+
+
+#' Simulate Diffusion via Euler-Maruyama Approximation (in C)
+#' @examples
+#' afun <- function(x,lambda,mu) {
+#'  lambda-mu*x
+#' }
+#' bfun <- function(x,lambda,mu) {
+#'  sqrt(lambda+mu*x)
+#'  }
+#'  out <- rdiff_C(afun,bfun,seed = 42,lambda=1,mu=0.1)
+#'  plot(ts(out,0.01))
+#' @useDynLib ModellingWithData C_rdiff
+#' @export
+rdiff_C <- function(afun,bfun,x0=0,t=50,dt=0.01,seed,...){
+  call <- match.call(expand.dots = FALSE)
+  ts(.Call(C_rdiff,call,x0,t,dt,as.integer(seed),environment()),deltat = dt)
+}
