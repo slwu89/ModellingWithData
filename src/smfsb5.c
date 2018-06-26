@@ -112,7 +112,6 @@ SEXP C_ar1(SEXP n, SEXP alpha, SEXP sigma, SEXP seed){
 };
 
 
-
 /* ##################################################
 #   Simulate CTMC
 ################################################## */
@@ -179,6 +178,9 @@ SEXP C_ar1(SEXP n, SEXP alpha, SEXP sigma, SEXP seed){
  };
 
 
+ /* ##################################################
+#   Simulate Diffusion Process via Euler-Maruyama Approximation
+################################################## */
  SEXP C_rdiff(SEXP call, SEXP x0, SEXP t, SEXP dtR, SEXP seed, SEXP rho){
 
    /* alloc rng */
