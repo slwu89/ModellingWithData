@@ -73,6 +73,7 @@ SEXP C_gillespie(SEXP call, SEXP N, SEXP S, SEXP n, SEXP seed, SEXP rho){
   /* initialize variables */
   SEXP tt = Rf_ScalarReal(0.); /* system time */
   double* tt_p = REAL(tt);
+
   SEXP x = PROTECT(Rf_duplicate(getListElement(N,"M"))); /* current marking */
   int* x_p = INTEGER(x); /* pointer to current marking */
 
@@ -89,21 +90,22 @@ SEXP C_gillespie(SEXP call, SEXP N, SEXP S, SEXP n, SEXP seed, SEXP rho){
   int* xmat_p = INTEGER(xmat);
 
   /* set initial marking of net */
-  for(int j=0; j<u; j++){
-    xmat_p[0 + nrow*j] = x_p[j];
+  for(int k=0; k<u; k++){
+    xmat_p[0 + nrow*k] = x_p[k];
   }
 
   SEXP hFun = PROTECT(getListElement(N,"h")); /* function to compute reaction propensities */
   SEXP hCall = PROTECT(LCONS(hFun, LCONS(x, LCONS(tt, LCONS(R_DotsSymbol, R_NilValue)))));
   SEXP h = PROTECT(allocVector(REALSXP,v)); /* vector of propensities */
 
-  gsl_ran_discrete_t* vv; /* lookup table for determining which reaction happened (PMF) */
+  gsl_ran_discrete_t* v_table; /* lookup table for determining which reaction happened (PMF) */
 
   int zeros = 0;
 
   /* simulate SPN */
   for(int i=0; i<asInteger(n); i++){
 
+    /* check if any species are exhausted */
     for(int k=0; k<u; k++){
       if(x_p[k]==0){
         zeros = 1;
@@ -127,12 +129,12 @@ SEXP C_gillespie(SEXP call, SEXP N, SEXP S, SEXP n, SEXP seed, SEXP rho){
     *tt_p += gsl_ran_exponential(rng,Lambda);
 
     /* multinomial sampling to determine the reaction that took place */
-    vv = gsl_ran_discrete_preproc(v,REAL(h));
-    int j = gsl_ran_discrete(rng,vv);
+    v_table = gsl_ran_discrete_preproc(v,REAL(h));
+    int v_rxn = gsl_ran_discrete(rng,v_table);
 
     /* update current marking */
     for(int k=0; k<u; k++){
-      x_p[k] += S_p[k + u*j];
+      x_p[k] += S_p[k + u*v_rxn];
     }
 
     /* record time and marking */
@@ -144,7 +146,7 @@ SEXP C_gillespie(SEXP call, SEXP N, SEXP S, SEXP n, SEXP seed, SEXP rho){
 
   /* free rng */
   gsl_rng_free(rng);
-  gsl_ran_discrete_free(vv);
+  gsl_ran_discrete_free(v_table);
 
   /* return output */
   SEXP names = PROTECT(Rf_allocVector(STRSXP,2));

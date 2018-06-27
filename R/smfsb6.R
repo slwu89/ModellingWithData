@@ -44,6 +44,48 @@ simpleEuler_C <- function(t=50,dt=0.001,fun,ic,...){
   ts(.Call(C_simpleEuler,call,t,dt,ic,environment()),start = 0,deltat = dt)
 }
 
+#' Gillespie algorithm for Stochastic Petri Net (SPN) (in R)
+#' @examples
+#' N = list()
+#' N$M=c(x1=50,x2=100)
+#' N$Pre=matrix(c(1,0,1,1,0,1),ncol=2,byrow=TRUE)
+#' N$Post=matrix(c(2,0,0,2,0,0),ncol=2,byrow=TRUE)
+#' N$h=function(x,t,th=c(th1=1,th2=0.005,th3=0.6)){
+#'   with(as.list(c(x,th)),{
+#'    return(c(th1*x1, th2*x1*x2, th3*x2 ))
+#'   })
+#' }
+#'
+#'
+#' out = gillespie(N,10000)
+#' op = par(mfrow=c(2,2))
+#' plot(stepfun(out$t,out$x[,1]),pch="")
+#' plot(stepfun(out$t,out$x[,2]),pch="")
+#' plot(out$x,type="l")
+#' par(op)
+#' @export
+gillespie <- function(N, n, ...) {
+
+  tt = 0
+  x = N$M
+  S = t(N$Post-N$Pre)
+  u = nrow(S)
+  v= ncol(S)
+  tvec= vector("numeric",n)
+  xmat = matrix(ncol=u,nrow=n+1)
+  xmat[1,] = x
+
+  for(i in 1:n){
+    h = N$h(x,tt, ...)
+    tt = tt+rexp(1,sum(h))
+    j = sample(v,1,prob=h)
+    x = x+S[,j]
+    tvec[i] = tt
+    xmat[i+1,] = x
+  }
+  return(list(t=tvec, x=xmat))
+}
+
 #' Gillespie algorithm for Stochastic Petri Net (SPN) (in C)
 #' @useDynLib ModellingWithData C_gillespie
 #' @examples
@@ -59,7 +101,7 @@ simpleEuler_C <- function(t=50,dt=0.001,fun,ic,...){
 #'
 #' out <- gillespie_C(N = N,n = 1e4,seed = 1654)
 #'
-#' plot(out$t,out$x[,1][-1])
+#' matplot(out$t,out$x[-1,],type="l")
 #' plot(out$x,type="l")
 #' @export
 gillespie_C <- function(N,n,seed,...){

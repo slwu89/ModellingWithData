@@ -22,6 +22,6 @@ N$h=function(x,t,th=c(th1=1,th2=0.005,th3=0.6)){
 
 out <- gillespie_C(N = N,n = 1e4,seed = 1654)
 
-plot(out$t,out$x[,1][-1])
+matplot(out$t,out$x[-1,],type="l")
 plot(out$x,type="l")
 }
