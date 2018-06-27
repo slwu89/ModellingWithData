@@ -3,6 +3,9 @@
 #   Sean Wu
 ################################################## */
 
+#ifndef SMFSB5_H
+#define SMFSB5_H
+
  /* C headers */
 #include <stdio.h>
 #include <math.h>
@@ -15,9 +18,6 @@
  /* R's C API */
 #include <R.h>
 #include <Rinternals.h>
-
-/* get GSL matrix from SEXP (borrowed from RcppGSL) */
-gsl_matrix* SEXP_2_GSL_matrix(SEXP matR);
 
 /* Simulate DTMC */
 SEXP C_rfmc(SEXP n, SEXP P, SEXP pi0, SEXP seed);
@@ -33,3 +33,5 @@ SEXP C_imdeath(SEXP nR, SEXP x0R, SEXP lambdaR, SEXP muR, SEXP seed);
 
 /* Simulate Diffusion Process via Euler-Maruyama Approximation */
 SEXP C_rdiff(SEXP call, SEXP x0, SEXP t, SEXP dtR, SEXP seed, SEXP rho);
+
+#endif

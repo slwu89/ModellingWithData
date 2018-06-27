@@ -43,3 +43,29 @@ simpleEuler_C <- function(t=50,dt=0.001,fun,ic,...){
   call <- match.call(expand.dots = FALSE)
   ts(.Call(C_simpleEuler,call,t,dt,ic,environment()),start = 0,deltat = dt)
 }
+
+#' Gillespie algorithm for Stochastic Petri Net (SPN) (in C)
+#' @useDynLib ModellingWithData C_gillespie
+#' @examples
+#' N = list()
+#' N$M=c(x1=50,x2=100)
+#' N$Pre=matrix(c(1,0,1,1,0,1),ncol=2,byrow=TRUE)
+#' N$Post=matrix(c(2,0,0,2,0,0),ncol=2,byrow=TRUE)
+#' N$h=function(x,t,th=c(th1=1,th2=0.005,th3=0.6)){
+#'   with(as.list(th),{
+#'     return(c(th1*x[1], th2*x[1]*x[2], th3*x[2] ))
+#'   })
+#' }
+#'
+#' out <- gillespie_C(N = N,n = 1e4,seed = 1654)
+#'
+#' plot(out$t,out$x[,1][-1])
+#' plot(out$x,type="l")
+#' @export
+gillespie_C <- function(N,n,seed,...){
+  call <- match.call(expand.dots = FALSE)
+  S <- t(N$Post - N$Pre)
+  storage.mode(S) = "integer"
+  storage.mode(N$M) = "integer"
+  .Call(C_gillespie,call,N,S,as.integer(n),as.integer(seed),new.env())
+}

@@ -3,6 +3,9 @@
 #   Sean Wu
 ################################################## */
 
+#ifndef BIRDS_H
+#define BIRDS_H
+
 /* C libraries */
 #include <apop.h>
 #include <time.h>
@@ -40,3 +43,5 @@ void cull_flock();
 double count(int);
 bird* find_opponent(int);
 void out(int i);
+
+#endif

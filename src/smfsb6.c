@@ -59,3 +59,104 @@ SEXP C_simpleEuler(SEXP call, SEXP tR, SEXP dtR, SEXP icR, SEXP rho){
   UNPROTECT(5);
   return xmat;
 };
+
+
+/* ##################################################
+#   Gillespie algorithm for Stochastic Petri Net (SPN)
+################################################## */
+SEXP C_gillespie(SEXP call, SEXP N, SEXP S, SEXP n, SEXP seed, SEXP rho){
+
+  /* alloc rng */
+  gsl_rng * rng = gsl_rng_alloc(gsl_rng_mt19937);
+  gsl_rng_set(rng,asInteger(seed));
+
+  /* initialize variables */
+  SEXP tt = Rf_ScalarReal(0.); /* system time */
+  double* tt_p = REAL(tt);
+  SEXP x = PROTECT(Rf_duplicate(getListElement(N,"M"))); /* current marking */
+  int* x_p = INTEGER(x); /* pointer to current marking */
+
+  int* S_p = INTEGER(S);
+  int u = nrows(S); /* number of species */
+  int v = ncols(S); /* number of reactions */
+
+  /* outputs */
+  SEXP tvec = PROTECT(allocVector(REALSXP,asInteger(n)));
+  double* tvec_p = REAL(tvec);
+
+  int nrow = asInteger(n)+1;
+  SEXP xmat = PROTECT(allocMatrix(INTSXP,nrow,u));
+  int* xmat_p = INTEGER(xmat);
+
+  /* set initial marking of net */
+  for(int j=0; j<u; j++){
+    xmat_p[0 + nrow*j] = x_p[j];
+  }
+
+  SEXP hFun = PROTECT(getListElement(N,"h")); /* function to compute reaction propensities */
+  SEXP hCall = PROTECT(LCONS(hFun, LCONS(x, LCONS(tt, LCONS(R_DotsSymbol, R_NilValue)))));
+  SEXP h = PROTECT(allocVector(REALSXP,v)); /* vector of propensities */
+
+  gsl_ran_discrete_t* vv; /* lookup table for determining which reaction happened (PMF) */
+
+  int zeros = 0;
+
+  /* simulate SPN */
+  for(int i=0; i<asInteger(n); i++){
+
+    for(int k=0; k<u; k++){
+      if(x_p[k]==0){
+        zeros = 1;
+      }
+    }
+    if(zeros){
+      break;
+    }
+
+    /* evaluate reaction propensities */
+    h = eval(hCall,rho);
+    double* h_p = REAL(h);
+
+    /* time until next reaction */
+    double Lambda = 0.;
+    for(int j=0; j<v; j++){
+      Lambda += h_p[j];
+    }
+
+    /* advance time */
+    *tt_p += gsl_ran_exponential(rng,Lambda);
+
+    /* multinomial sampling to determine the reaction that took place */
+    vv = gsl_ran_discrete_preproc(v,REAL(h));
+    int j = gsl_ran_discrete(rng,vv);
+
+    /* update current marking */
+    for(int k=0; k<u; k++){
+      x_p[k] += S_p[k + u*j];
+    }
+
+    /* record time and marking */
+    tvec_p[i] = *tt_p;
+    for(int k=0; k<u; k++){
+      xmat_p[(i+1) + nrow*k] = x_p[k];
+    }
+  }
+
+  /* free rng */
+  gsl_rng_free(rng);
+  gsl_ran_discrete_free(vv);
+
+  /* return output */
+  SEXP names = PROTECT(Rf_allocVector(STRSXP,2));
+  SET_STRING_ELT(names,0,Rf_mkChar("t"));
+  SET_STRING_ELT(names,1,Rf_mkChar("x"));
+
+  SEXP out = PROTECT(allocVector(VECSXP, 2));
+  Rf_namesgets(out,names);
+
+  SET_VECTOR_ELT(out,0,tvec);
+  SET_VECTOR_ELT(out,1,xmat);
+
+  UNPROTECT(8);
+  return out;
+};

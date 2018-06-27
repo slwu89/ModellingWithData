@@ -3,6 +3,9 @@
 #   Sean Wu
 ################################################## */
 
+#ifndef MODWITHDATA4_H
+#define MODWITHDATA4_H
+
 /* C headers */
 #include <stdio.h>
 #include <math.h>
@@ -65,3 +68,5 @@ SEXP C_find_triplet(SEXP inR);
 void swap(int* a, int* b);
 
 SEXP C_swap(SEXP aR, SEXP bR);
+
+#endif
