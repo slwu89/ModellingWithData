@@ -90,6 +90,41 @@ rcfmc_C <- function(n,Q,pi0,seed){
   # return(stepfun(out$times[-1],out$states))
 }
 
+
+#' Simulate Immigration-Death Process (in R)
+#' @examples
+#' plot(imdeath(n=30))
+#' @export
+imdeath <- function(n=20,x0=0,lambda=1,mu=0.1){
+
+  xvec= vector("numeric",n+1)
+  tvec= vector("numeric",n)
+  t=0
+  x = x0
+  xvec[1] <- x
+  for(i in 1:n){
+    t = t+rexp(1,lambda+x*mu)
+    if(runif(1,0,1) < lambda/(lambda+x*mu)){
+      x <- x+1
+    } else {
+      x <- x-1
+    }
+    xvec[i+1] <- x
+    tvec[i] <- t
+  }
+  stepfun(tvec, xvec)
+}
+
+#' Simulate Immigration-Death Process (in C)
+#' @examples
+#' plot(imdeath_C(n=30,seed=42))
+#' @useDynLib ModellingWithData C_imdeath
+#' @export
+imdeath_C <- function(n=20,x0=0,lambda=1,mu=0.1,seed){
+  out <- .Call(C_imdeath,as.integer(n),as.integer(x0),lambda,mu,as.integer(seed))
+  stepfun(out$tvec,out$xvec)
+}
+
 #' Simulate Diffusion via Euler-Maruyama Approximation (in R)
 #' @examples
 #' afun <- function(x,lambda,mu) {

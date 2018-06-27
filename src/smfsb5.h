@@ -28,5 +28,8 @@ SEXP C_ar1(SEXP n, SEXP alpha, SEXP sigma, SEXP seed);
 /* Simulate CTMC */
 SEXP C_ctmc(SEXP n, SEXP Q, SEXP pi0, SEXP seed);
 
+/* Simulate Immigration-Death Process */
+SEXP C_imdeath(SEXP nR, SEXP x0R, SEXP lambdaR, SEXP muR, SEXP seed);
+
 /* Simulate Diffusion Process via Euler-Maruyama Approximation */
 SEXP C_rdiff(SEXP call, SEXP x0, SEXP t, SEXP dtR, SEXP seed, SEXP rho);

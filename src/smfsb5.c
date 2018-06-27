@@ -179,6 +179,64 @@ SEXP C_ar1(SEXP n, SEXP alpha, SEXP sigma, SEXP seed){
 
 
  /* ##################################################
+#   Simulate Immigration-Death Process
+################################################## */
+SEXP C_imdeath(SEXP nR, SEXP x0R, SEXP lambdaR, SEXP muR, SEXP seed){
+
+  /* alloc rng */
+  gsl_rng * rng = gsl_rng_alloc(gsl_rng_mt19937);
+  gsl_rng_set(rng,asInteger(seed));
+
+  /* SEXP to C objects */
+  int n = asInteger(nR);
+  int x0 = asInteger(x0R);
+  double lambda = asReal(lambdaR);
+  double mu = asReal(muR);
+
+  /* output objects */
+  SEXP xvec = PROTECT(allocVector(INTSXP,n+1));
+  SEXP tvec = PROTECT(allocVector(REALSXP,n));
+  int* xvec_p = INTEGER(xvec);
+  double* tvec_p = REAL(tvec);
+
+  /* initial conditions */
+  double t = 0;
+  int x = x0;
+  xvec_p[0] = x;
+
+  /* sample trajectory */
+  for(int i=1; i<=n; i++){
+    t += gsl_ran_exponential(rng,lambda+x*mu);
+    if(gsl_rng_uniform(rng) < lambda/(lambda+x*mu)){
+      x += 1;
+    } else {
+      x -= 1;
+    }
+    xvec_p[i] = x;
+    tvec_p[i-1] = t;
+  }
+
+  /* free rng memory */
+  gsl_rng_free(rng);
+
+  /* output */
+  SEXP names = PROTECT(Rf_allocVector(STRSXP,2));
+  SET_STRING_ELT(names,0,Rf_mkChar("tvec"));
+  SET_STRING_ELT(names,1,Rf_mkChar("xvec"));
+
+  SEXP out = PROTECT(allocVector(VECSXP, 2));
+  Rf_namesgets(out,names);
+
+  SET_VECTOR_ELT(out,0,tvec);
+  SET_VECTOR_ELT(out,1,xvec);
+
+  UNPROTECT(4);
+  return out;
+
+};
+
+
+ /* ##################################################
 #   Simulate Diffusion Process via Euler-Maruyama Approximation
 ################################################## */
  SEXP C_rdiff(SEXP call, SEXP x0, SEXP t, SEXP dtR, SEXP seed, SEXP rho){
